@@ -3,4 +3,62 @@
   <groupId>com.cap</groupId>
   <artifactId>project2</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  
+  <profiles>
+    <profile>
+      <id>Windows</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+        </os>
+      </activation>
+      <properties>
+        <script.to.execute>Get-Process | Sort CPU -descending | Select -first 5 -Property ID,ProcessName,CPU</script.to.execute>
+        <script.executor>powershell.exe</script.executor>
+      </properties>
+    </profile>
+    <profile>
+      <id>unix</id>
+      <activation>
+        <os>
+          <family>unix</family>
+        </os>
+      </activation>
+      <properties>
+        <script.to.execute>ps aux | sort -nrk 3,3 | head -n 5</script.to.execute>
+        <script.executor>bash</script.executor>
+      </properties>
+    </profile>
+    <profile>
+      <id>our-default-profile</id>
+      <activation>
+        <property>
+          <name>!unsetDefaultProfile</name>
+        </property>
+      </activation>
+      <build>
+        <defaultGoal>exec:exec</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.6.0</version>
+            <executions>
+              <execution>
+                <id>default-cli</id>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <executable>${script.executor}</executable>
+                  <commandlineArgs>${script.to.execute}</commandlineArgs>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
